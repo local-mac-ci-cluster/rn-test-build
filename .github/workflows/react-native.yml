@@ -1,0 +1,50 @@
+# Workflow：React Native demo 冒烟（基于 quickstart/templates/react-native.yml）
+# =============================================================================
+# 冒烟先验证 JS 链路：npm ci → jest。原生 iOS/Android 构建（pod install /
+# xcodebuild / gradlew）需要 ios/ android/ 脚手架，本 demo 暂未包含，
+# action 的 ios-workspace / android-task 留空即自动跳过。
+#
+# 冒烟期临时配置：job 级代理走 Windows 172.16.0.81:7890（npmjs.org 依赖下载用，
+# 生产切内网白名单后删除下面 env 块即可）。
+# =============================================================================
+
+name: React Native CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-react-native:
+    runs-on: [macos, arm64, macrunara]
+
+    env:
+      # --- 冒烟期临时：npm registry 走 Windows 代理 ---
+      http_proxy: http://172.16.0.81:7890
+      https_proxy: http://172.16.0.81:7890
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 可选：Macrunara Setup Action（需仓库 Secrets 配 MACRUNARA_INSTALLATION_ID；
+      # 没配就删掉这个 step，不影响构建）
+      - uses: macrunara/setup-action@v1
+        with:
+          installation-id: ${{ secrets.MACRUNARA_INSTALLATION_ID }}
+          region: auto
+
+      - name: Show Environment
+        run: |
+          echo "OS:   $(uname -s) $(uname -m)"
+          echo "Runner: $RUNNER_NAME ($RUNNER_OS/$RUNNER_ARCH)"
+
+      # Step: 依赖 + jest（无 ios-workspace / android-task → 跳过原生构建）
+      - name: RN Install & Test
+        uses: macrunara/build-actions/react-native@v1
+        with:
+          package-manager: npm
+          run-tests: 'true'
+          upload_artifact: false
