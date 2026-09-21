@@ -4,8 +4,10 @@
 # xcodebuild / gradlew）需要 ios/ android/ 脚手架，本 demo 暂未包含，
 # action 的 ios-workspace / android-task 留空即自动跳过。
 #
-# 冒烟期临时配置：job 级代理走 Windows 172.16.0.81:7890（npmjs.org 依赖下载用，
-# 生产切内网白名单后删除下面 env 块即可）。
+# 出网代理由 l4-agent 在 VM 内统一注入（wrapper env + gitconfig +
+# gradle.properties），workflow 不携带任何代理配置。
+# ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true：upload-artifact 按其声明的
+# Node 20 运行，绕开 Node 24 下代理 ECONNRESET 问题。
 # =============================================================================
 
 name: React Native CI
@@ -22,9 +24,7 @@ jobs:
     runs-on: [macos, arm64, macrunara]
 
     env:
-      # --- 冒烟期临时：npm registry 走 Windows 代理 ---
-      http_proxy: http://172.16.0.81:7890
-      https_proxy: http://172.16.0.81:7890
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
     steps:
       - uses: actions/checkout@v4
