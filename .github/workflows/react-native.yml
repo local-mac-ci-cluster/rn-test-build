@@ -43,7 +43,7 @@ jobs:
 
       # Step: 依赖 + jest（无 ios-workspace / android-task → 跳过原生构建）
       - name: RN Install & Test
-        uses: macrunara/build-actions/react-native@v1
+        uses: macrunara/build-actions/react-native@46d8bd1dfa108ffb00db06e0b07e41f2906d6297  # v1 (maven mirrors)
         with:
           package-manager: npm
           run-tests: 'true'
